@@ -1,16 +1,20 @@
 ﻿using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System;
+using System.IO;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace RgWebScraper
 {
     public class Program
     {
-        private static void Main()
+        private static async Task Main()
         {
             // Guide
             // http://www.macaalay.com/2016/07/06/scraping-website-data-that-needs-you-to-log-in/
+
+            string[] lines = await File.ReadAllLinesAsync("Account.txt");
 
             ChromeDriver chromeDriver = new ChromeDriver(AppDomain.CurrentDomain.BaseDirectory)
             {
@@ -20,10 +24,10 @@ namespace RgWebScraper
             chromeDriver.Navigate();
 
             IWebElement element = chromeDriver.FindElement(By.Id("input-login"));
-            element.SendKeys("email");
+            element.SendKeys(lines[0]);
 
             element = chromeDriver.FindElement(By.Id("input-password"));
-            element.SendKeys("password");
+            element.SendKeys(lines[1]);
 
             element = chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[1]/div[1]/div/div/div/div/form/div/div[4]/button"));
             element.Click();
