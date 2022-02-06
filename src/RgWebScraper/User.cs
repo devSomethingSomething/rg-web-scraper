@@ -8,13 +8,13 @@ namespace RgWebScraper
 {
     public class User
     {
-        public string NameAndSurname { get; set; }
+        public string NameAndSurname { get; set; } = "John Doe";
 
-        public float Score { get; set; }
+        public float Score { get; set; } = 0.0f;
 
-        public int HIndex { get; set; }
+        public int HIndex { get; set; } = 0;
 
-        public int HIndexExcluding { get; set; }
+        public int HIndexExcluding { get; set; } = 0;
 
         public User()
         {
