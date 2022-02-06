@@ -1,7 +1,11 @@
-﻿using OpenQA.Selenium;
+﻿using CsvHelper;
+using OpenQA.Selenium;
 using OpenQA.Selenium.Chrome;
 using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -13,6 +17,10 @@ namespace RgWebScraper
         private static string password;
 
         private static ChromeDriver chromeDriver;
+
+        private static List<Page> pages;
+        // This list will need to be able to accept new users as the program runs
+        private static List<User> users = new List<User>();
 
         private static async Task GetAccountDetails()
         {
@@ -42,10 +50,25 @@ namespace RgWebScraper
             element.Click();
         }
 
+        private static void GetPages()
+        {
+            // Remember to add file and header otherwise an exception will be thrown
+            using (StreamReader streamReader = new StreamReader("pages.csv"))
+            {
+                using (CsvReader csvReader = new CsvReader(streamReader, CultureInfo.InvariantCulture))
+                {
+                    pages = csvReader.GetRecords<Page>().ToList();
+                }
+            }
+        }
+
         private static async Task Main()
         {
             // Guide
             // http://www.macaalay.com/2016/07/06/scraping-website-data-that-needs-you-to-log-in/
+
+            // Get the links of the pages
+            GetPages();
 
             // Get the account details for login
             await GetAccountDetails();
@@ -67,23 +90,34 @@ namespace RgWebScraper
             // --- Main loop should start here
             // Read in URLs and go through them here
 
-            // Make sure to append the extra bit of the URL
-            chromeDriver.Navigate().GoToUrl("https://www.researchgate.net/profile/James-Swan-3" + "/scores");
+            foreach (var page in pages)
+            {
+                User user = new User();
 
-            // Should store these values
-            // RG Score
-            Console.WriteLine(chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[2]/div/div/div[2]/div[1]/div/div[2]")).Text);
+                // Make sure to append the extra bit of the URL
+                chromeDriver.Navigate().GoToUrl(page.Url + "/scores");
 
-            // h-index
-            Console.WriteLine(chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[3]/div/div/div/div[2]/div[1]/div/div[2]")).Text);
+                // Should store these values
+                // Name and surname
+                user.NameAndSurname = chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[1]/div[2]/div/div/div/div[2]/div/div[1]/div")).Text;
 
-            // h-index excluding self-citations
-            Console.WriteLine(chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[3]/div/div/div/div[2]/div[2]/div/div[2]")).Text);
+                // RG Score
+                user.Score = float.Parse(chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[2]/div/div/div[2]/div[1]/div/div[2]")).Text);
 
-            // Do this at the end of every read, 10 to 15 seconds should be good
-            // Wait for a few seconds to prevent the bot check from finding the scraper
-            // 5 seconds
-            Thread.Sleep(5000);
+                // h-index
+                user.HIndex = int.Parse(chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[3]/div/div/div/div[2]/div[1]/div/div[2]")).Text);
+
+                // h-index excluding self-citations
+                user.HIndexExcluding = int.Parse(chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[3]/div/div/div/div[2]/div[2]/div/div[2]")).Text);
+
+                // Add new user to the list of other users, holds all their data
+                users.Add(user);
+
+                // Do this at the end of every read, 10 to 15 seconds should be good
+                // Wait for a few seconds to prevent the bot check from finding the scraper
+                // 5 seconds
+                Thread.Sleep(10000);
+            }
 
             // --- Main loop ends here
             // Should write the results out to a .csv file
