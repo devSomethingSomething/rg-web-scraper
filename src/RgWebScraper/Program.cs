@@ -62,6 +62,17 @@ namespace RgWebScraper
             }
         }
 
+        private static void WriteUsers()
+        {
+            using (StreamWriter streamWriter = new StreamWriter("users.csv"))
+            {
+                using (CsvWriter csvWriter = new CsvWriter(streamWriter, CultureInfo.InvariantCulture))
+                {
+                    csvWriter.WriteRecords(users);
+                }
+            }
+        }
+
         private static async Task Main()
         {
             // Guide
@@ -89,14 +100,16 @@ namespace RgWebScraper
 
             // --- Main loop should start here
             // Read in URLs and go through them here
-
             foreach (var page in pages)
             {
+                // Create new temp user to hold all the stats
                 User user = new User();
 
+                // Go to each page
                 // Make sure to append the extra bit of the URL
                 chromeDriver.Navigate().GoToUrl(page.Url + "/scores");
 
+                // Set and store the values
                 // Should store these values
                 // Name and surname
                 user.NameAndSurname = chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[1]/div[2]/div/div/div/div[2]/div/div[1]/div")).Text;
@@ -119,11 +132,12 @@ namespace RgWebScraper
                 Thread.Sleep(10000);
             }
 
-            // --- Main loop ends here
-            // Should write the results out to a .csv file
-
             // Close the driver when done
             chromeDriver.Quit();
+
+            // --- Main loop ends here
+            // Should write the results out to a .csv file
+            WriteUsers();
 
             // Display alert message
             Console.WriteLine("Success");
