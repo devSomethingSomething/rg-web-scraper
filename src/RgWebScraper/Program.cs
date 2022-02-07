@@ -73,6 +73,18 @@ namespace RgWebScraper
             }
         }
 
+        private static string GetValue(string xpath)
+        {
+            try
+            {
+                return chromeDriver.FindElement(By.XPath(xpath)).Text;
+            }
+            catch (Exception)
+            {
+                return "0";
+            }
+        }
+
         private static async Task Main()
         {
             // Guide
@@ -109,19 +121,24 @@ namespace RgWebScraper
                 // Make sure to append the extra bit of the URL
                 chromeDriver.Navigate().GoToUrl(page.Url + "/scores");
 
+                // Convert each of the below variable assignments to a
+                // method that handles and returns a value
+                // Should use exceptions and should return a default value
+                // This is the best way of handling missing values
+
                 // Set and store the values
                 // Should store these values
                 // Name and surname
-                user.NameAndSurname = chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[1]/div[2]/div/div/div/div[2]/div/div[1]/div")).Text;
+                user.NameAndSurname = GetValue("/html/body/div[1]/div[3]/div[1]/div/div/div[1]/div[2]/div/div/div/div[2]/div/div[1]/div");
 
                 // RG Score
-                user.Score = float.Parse(chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[2]/div/div/div[2]/div[1]/div/div[2]")).Text);
+                user.Score = float.Parse(GetValue("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[2]/div/div/div[2]/div[1]/div/div[2]"));
 
                 // h-index
-                user.HIndex = int.Parse(chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[3]/div/div/div/div[2]/div[1]/div/div[2]")).Text);
+                user.HIndex = int.Parse(GetValue("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[3]/div/div/div/div[2]/div[1]/div/div[2]"));
 
                 // h-index excluding self-citations
-                user.HIndexExcluding = int.Parse(chromeDriver.FindElement(By.XPath("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[3]/div/div/div/div[2]/div[2]/div/div[2]")).Text);
+                user.HIndexExcluding = int.Parse(GetValue("/html/body/div[1]/div[3]/div[1]/div/div/div[3]/div[1]/div/div/div[3]/div/div/div/div[2]/div[2]/div/div[2]"));
 
                 // Add new user to the list of other users, holds all their data
                 users.Add(user);
