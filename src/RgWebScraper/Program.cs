@@ -114,17 +114,20 @@ namespace RgWebScraper
             // Read in URLs and go through them here
             foreach (var page in pages)
             {
+                // Catch a bad URL
+                if (page.Url.Equals("null"))
+                {
+                    users.Add(new User());
+
+                    continue;
+                }
+
                 // Create new temp user to hold all the stats
                 User user = new User();
 
                 // Go to each page
                 // Make sure to append the extra bit of the URL
                 chromeDriver.Navigate().GoToUrl(page.Url + "/scores");
-
-                // Convert each of the below variable assignments to a
-                // method that handles and returns a value
-                // Should use exceptions and should return a default value
-                // This is the best way of handling missing values
 
                 // Set and store the values
                 // Should store these values
